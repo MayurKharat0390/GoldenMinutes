@@ -173,72 +173,73 @@ function syncPendingSOS() {
                 });
             })
         );
-    }
+    });
+}
 
 // Push Notification Event Handler
 self.addEventListener('push', event => {
-        console.log('Push notification received:', event);
+    console.log('Push notification received:', event);
 
-        let notificationData = {
-            title: 'Emergency Alert',
-            body: 'New emergency nearby',
-            icon: '/static/images/icon-192.png',
-            badge: '/static/images/badge-72.png',
-            tag: 'emergency-alert',
-            requireInteraction: true,
-            data: {
-                url: '/emergencies/map/'
-            }
-        };
-
-        if (event.data) {
-            try {
-                const data = event.data.json();
-                notificationData = {
-                    title: `🚨 ${data.emergency_type || 'Emergency Alert'}`,
-                    body: `${data.distance || 'Nearby'} • ${data.severity || 'High'} Priority\nTap to respond`,
-                    icon: '/static/images/icon-192.png',
-                    badge: '/static/images/badge-72.png',
-                    tag: `emergency-${data.emergency_id}`,
-                    requireInteraction: true,
-                    vibrate: [200, 100, 200, 100, 200],
-                    data: {
-                        url: `/emergencies/${data.emergency_id}/`,
-                        emergency_id: data.emergency_id
-                    }
-                };
-            } catch (e) {
-                console.error('Error parsing push data:', e);
-            }
+    let notificationData = {
+        title: 'Emergency Alert',
+        body: 'New emergency nearby',
+        icon: '/static/images/icon-192.png',
+        badge: '/static/images/badge-72.png',
+        tag: 'emergency-alert',
+        requireInteraction: true,
+        data: {
+            url: '/emergencies/map/'
         }
+    };
 
-        event.waitUntil(
-            self.registration.showNotification(notificationData.title, notificationData)
-        );
-    });
+    if (event.data) {
+        try {
+            const data = event.data.json();
+            notificationData = {
+                title: `🚨 ${data.emergency_type || 'Emergency Alert'}`,
+                body: `${data.distance || 'Nearby'} • ${data.severity || 'High'} Priority\nTap to respond`,
+                icon: '/static/images/icon-192.png',
+                badge: '/static/images/badge-72.png',
+                tag: `emergency-${data.emergency_id}`,
+                requireInteraction: true,
+                vibrate: [200, 100, 200, 100, 200],
+                data: {
+                    url: `/emergencies/${data.emergency_id}/`,
+                    emergency_id: data.emergency_id
+                }
+            };
+        } catch (e) {
+            console.error('Error parsing push data:', e);
+        }
+    }
 
-    // Notification Click Handler
-    self.addEventListener('notificationclick', event => {
-        console.log('Notification clicked:', event);
-        event.notification.close();
+    event.waitUntil(
+        self.registration.showNotification(notificationData.title, notificationData)
+    );
+});
 
-        const urlToOpen = event.notification.data?.url || '/emergencies/map/';
+// Notification Click Handler
+self.addEventListener('notificationclick', event => {
+    console.log('Notification clicked:', event);
+    event.notification.close();
 
-        event.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true })
-                .then(windowClients => {
-                    // Check if there's already a window open
-                    for (let client of windowClients) {
-                        if (client.url.includes(urlToOpen) && 'focus' in client) {
-                            return client.focus();
-                        }
+    const urlToOpen = event.notification.data?.url || '/emergencies/map/';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(windowClients => {
+                // Check if there's already a window open
+                for (let client of windowClients) {
+                    if (client.url.includes(urlToOpen) && 'focus' in client) {
+                        return client.focus();
                     }
-                    // Open new window if none found
-                    if (clients.openWindow) {
-                        return clients.openWindow(urlToOpen);
-                    }
-                })
-        );
-    });
+                }
+                // Open new window if none found
+                if (clients.openWindow) {
+                    return clients.openWindow(urlToOpen);
+                }
+            })
+    );
+});
 
-    console.log('Golden Minutes Service Worker loaded with Push Notifications');
+console.log('Golden Minutes Service Worker loaded with Push Notifications');
