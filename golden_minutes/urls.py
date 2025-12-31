@@ -40,6 +40,12 @@ urlpatterns = [
         content_type='application/javascript'
     ), name='service_worker'),
     
+    # Android Digital Asset Links (Removes URL bar)
+    path('.well-known/assetlinks.json', TemplateView.as_view(
+        template_name='pwa/assetlinks.json',
+        content_type='application/json'
+    )),
+    
     # Map test
     path('map-test/', TemplateView.as_view(template_name='map_test.html'), name='map_test'),
     

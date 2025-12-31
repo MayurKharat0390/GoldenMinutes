@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "app.railway.up.goldenminutes.twa",
+            "sha256_cert_fingerprints": [
+                "A6:F9:0D:90:F5:9B:CB:98:F3:04:2C:57:60:02:A5:D5:C9:CE:EB:13:69:8F:7F:35:23:F9:C9:24:52:01:B1:94"
+            ]
+        }
+    }
+]
