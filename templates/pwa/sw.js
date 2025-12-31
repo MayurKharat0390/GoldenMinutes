@@ -4,8 +4,8 @@ const OFFLINE_URL = '/offline.html';
 
 const CACHE_URLS = [
     '/',
-    '/static/css/main.css',
-    '/static/js/main.js',
+    '{% static "css/main.css" %}',
+    '{% static "js/main.js" %}',
     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
     'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
