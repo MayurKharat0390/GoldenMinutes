@@ -126,18 +126,19 @@
                     </div>
                     {% endif %}
 
-                    {% if emergency.bystander_mode_active %}
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <strong>Bystander Mode Active</strong>
-                        <p class="mb-0">
+                    <div class="alert alert-info mt-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-heart-pulse-fill me-2 fs-5"></i>
+                                <strong>Bystander Guidance</strong>
+                                <div class="small text-muted">First-Aid instructions while you wait.</div>
+                            </div>
                             <a href="{% url 'emergencies:bystander_guidance' emergency.emergency_id %}"
-                                class="btn btn-sm btn-info">
-                                View First-Aid Guidance
+                                class="btn btn-info text-white fw-bold shadow-sm">
+                                View Guide <i class="bi bi-arrow-right"></i>
                             </a>
-                        </p>
+                        </div>
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
