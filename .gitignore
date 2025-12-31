@@ -21,7 +21,8 @@ env/
 
 # Android/PWA
 .gemini/
-static/manifest.json
+# static/manifest.json (Needed for PWA)
+
 # Keep manifest if needed? Actually manifest is code. Keep it.
 
 # Temp scripts
