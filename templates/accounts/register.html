@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Golden Minutes{% endblock %}
+
+{% block content %}
+<style>
+    /* Dark Glass Theme */
+    body {
+        background: linear-gradient(-45deg, #020024, #120b33, #2d1b4e, #1c1c1c);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        min-height: 100vh;
+        color: white;
+        /* Force text white globally for this page */
+    }
+
+    @keyframes gradientBG {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Glass Card */
+    .register-card {
+        background: rgba(255, 255, 255, 0.08);
+        /* Slightly more transparent */
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        color: white;
+    }
+
+    /* Inputs Transparency */
+    .form-control,
+    .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white !important;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+        color: white !important;
+    }
+
+    .form-select option {
+        background-color: #1a1a1a;
+        color: white;
+    }
+
+    .input-group-text {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center py-5" style="min-height: 90vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="card register-card rounded-5">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-lg"
+                        style="width: 70px; height: 70px; background: linear-gradient(135deg, #ff416c, #ff4b2b); font-size: 2rem; color: white;">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">Join the Force</h2>
+                    <p class="text-white-50">Create your account</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <div
+                        class="alert alert-danger bg-danger bg-opacity-25 text-white border-0 py-2 rounded-3 small mb-2">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                    <div
+                        class="alert alert-danger bg-danger bg-opacity-25 text-white border-0 py-2 rounded-3 small mb-2">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label
+                            class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">Username</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text border-end-0"><i class="bi bi-person"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0 ps-0" required
+                                placeholder="Choose username">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">Email
+                            Address</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text border-end-0"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="email" class="form-control border-start-0 ps-0" required
+                                placeholder="name@example.com">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">Phone
+                            Number</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text border-end-0"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" name="phone_number" class="form-control border-start-0 ps-0"
+                                placeholder="+91 XXXXXXXXXX">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">I want
+                            to be a</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text border-end-0"><i class="bi bi-person-badge"></i></span>
+                            <select class="form-select border-start-0 ps-0" id="role" name="role" required>
+                                <option value="citizen">Citizen (Trigger SOS)</option>
+                                <option value="volunteer" selected>Volunteer (Help Others)</option>
+                            </select>
+                        </div>
+                        <div class="form-text text-white-50 small mt-1"><i class="bi bi-info-circle me-1"></i>
+                            Volunteers help save lives. Be a hero.</div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label
+                                class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" required
+                                placeholder="••••••">
+                        </div>
+                        <div class="col-6">
+                            <label
+                                class="form-label fw-semibold text-white-50 small text-uppercase letter-spacing-1">Confirm</label>
+                            <input type="password" name="password_confirm" class="form-control form-control-lg" required
+                                placeholder="••••••">
+                        </div>
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="terms" required
+                            style="background-color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3);">
+                        <label class="form-check-label small text-white-50" for="terms">
+                            I agree to the <a href="#" class="text-white fw-bold">Terms</a>. False reports are
+                            punishable.
+                        </label>
+                    </div>
+
+                    <button type="submit"
+                        class="btn btn-light w-100 py-3 rounded-pill fw-bold shadow-lg mb-4 text-danger transition-transform hover-scale">
+                        REGISTER NOW
+                    </button>
+
+                    <div class="text-center border-top border-white border-opacity-10 pt-4">
+                        <p class="text-white-50 mb-0">Already joined?</p>
+                        <a href="{% url 'accounts:login' %}"
+                            class="text-white fw-bold text-decoration-none border-bottom border-white pb-1">Login
+                            here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

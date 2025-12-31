@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Map Test - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Map Test Page</h2>
+    <p>This page tests if Leaflet.js is loading correctly.</p>
+
+    <div class="card">
+        <div class="card-body">
+            <div id="testMap" style="height: 400px; width: 100%; background-color: #f0f0f0;"></div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <p id="status">Initializing map...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    console.log('Map test script loaded');
+
+    // Check if Leaflet is available
+    if (typeof L === 'undefined') {
+        document.getElementById('status').innerHTML = '<span class="text-danger">ERROR: Leaflet.js not loaded!</span>';
+        console.error('Leaflet.js is not loaded');
+    } else {
+        console.log('Leaflet.js is loaded');
+        document.getElementById('status').innerHTML = '<span class="text-success">Leaflet.js loaded successfully!</span>';
+
+        // Try to create a map
+        try {
+            const map = L.map('testMap').setView([19.0760, 72.8777], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add a test marker
+            L.marker([19.0760, 72.8777]).addTo(map)
+                .bindPopup('Test Marker - Mumbai')
+                .openPopup();
+
+            document.getElementById('status').innerHTML += '<br><span class="text-success">Map initialized successfully!</span>';
+            console.log('Map created successfully');
+        } catch (error) {
+            document.getElementById('status').innerHTML += '<br><span class="text-danger">ERROR creating map: ' + error.message + '</span>';
+            console.error('Error creating map:', error);
+        }
+    }
+</script>
+{% endblock %}

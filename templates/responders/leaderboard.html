@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Volunteer Leaderboard - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">
+                <i class="bi bi-trophy-fill"></i> Volunteer Leaderboard
+            </h3>
+            <p class="mb-0 mt-2">Top volunteers making a difference in their communities</p>
+        </div>
+        <div class="card-body">
+            {% if volunteers %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Volunteer</th>
+                            <th>Role Level</th>
+                            <th>Impact Score</th>
+                            <th>Responses</th>
+                            <th>Success Rate</th>
+                            <th>Avg Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for volunteer in volunteers %}
+                        <tr>
+                            <td>
+                                {% if forloop.counter == 1 %}
+                                <i class="bi bi-trophy-fill text-warning" style="font-size: 1.5rem;"></i>
+                                {% elif forloop.counter == 2 %}
+                                <i class="bi bi-trophy-fill text-secondary" style="font-size: 1.3rem;"></i>
+                                {% elif forloop.counter == 3 %}
+                                <i class="bi bi-trophy-fill" style="font-size: 1.1rem; color: #cd7f32;"></i>
+                                {% else %}
+                                {{ forloop.counter }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ volunteer.user.username }}</strong>
+                                {% if volunteer.specializations %}
+                                <br><small class="text-muted">{{ volunteer.specializations|truncatewords:3 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ volunteer.get_role_level_display }}</span>
+                            </td>
+                            <td>
+                                <h5 class="mb-0 text-danger">{{ volunteer.impact_score }}</h5>
+                            </td>
+                            <td>{{ volunteer.total_responses }}</td>
+                            <td>
+                                {% if volunteer.total_responses > 0 %}
+                                {% widthratio volunteer.successful_responses volunteer.total_responses 100 %}%
+                                {% else %}
+                                0%
+                                {% endif %}
+                            </td>
+                            <td>{{ volunteer.average_response_time_minutes|floatformat:1 }} min</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-people" style="font-size: 3rem;"></i>
+                <p class="mt-3">No verified volunteers yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-people-fill text-success" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3">{{ volunteers.count }}</h3>
+                    <p class="text-muted">Active Volunteers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-heart-pulse-fill text-danger" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3">1,247</h3>
+                    <p class="text-muted">Lives Impacted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-clock-fill text-info" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3">3.2 min</h3>
+                    <p class="text-muted">Avg Response Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

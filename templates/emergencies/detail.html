@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Details - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Emergency Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Emergency Details
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Emergency ID</h6>
+                            <p class="font-monospace">{{ emergency.emergency_id }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Status</h6>
+                            <p>
+                                <span class="badge status-{{ emergency.status }}" id="emergencyStatus">
+                                    {{ emergency.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Emergency Type</h6>
+                            <p>
+                                <span class="emergency-icon {{ emergency.emergency_type }}">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </span>
+                                {{ emergency.get_emergency_type_display }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Severity</h6>
+                            <p>
+                                <span class="badge severity-{{ emergency.severity }}">
+                                    {{ emergency.get_severity_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Victim</h6>
+                            <p>{{ emergency.victim.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Triggered At</h6>
+                            <p>{{ emergency.triggered_at|date:"F d, Y H:i" }}</p>
+                        </div>
+                    </div>
+
+                    {% if emergency.description %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">Description</h6>
+                        <p>{{ emergency.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Location</h6>
+                        <p>
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            {{ emergency.latitude }}, {{ emergency.longitude }}
+                        </p>
+
+                        <!-- Google Maps Navigation Button -->
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ emergency.latitude }},{{ emergency.longitude }}&travelmode=driving"
+                            target="_blank" class="btn btn-primary w-100 mt-3 py-3 fw-bold shadow-sm">
+                            <i class="bi bi-navigation-fill me-2"></i>
+                            Navigate to Emergency Location
+                            <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                    </div>
+
+                    {% if emergency.primary_responder %}
+                    <div class="alert alert-success" id="responderInfo">
+                        <h6><i class="bi bi-person-check-fill"></i> Primary Responder</h6>
+                        <p class="mb-0">
+                            <strong>{{ emergency.primary_responder.username }}</strong>
+                            {% if emergency.responder_accepted_at %}
+                            <br><small>Accepted {{ emergency.responder_accepted_at|timesince }} ago</small>
+                            {% endif %}
+                        </p>
+
+                        <!-- Real-Time ETA Display -->
+                        <div class="mt-3 p-3 bg-white rounded-3 border border-success" id="etaDisplay"
+                            style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-muted d-block mb-1">ESTIMATED ARRIVAL</small>
+                                    <h3 class="mb-0 fw-bold text-success" id="etaTime">
+                                        <i class="bi bi-clock-fill me-2"></i>
+                                        <span id="etaMinutes">--</span>
+                                    </h3>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block mb-1">DISTANCE</small>
+                                    <h5 class="mb-0 fw-bold" id="etaDistance">-- km</h5>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                    role="progressbar" id="etaProgress" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-arrow-repeat spin"></i> Updating live...
+                            </small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-clock-history"></i>
+                        <strong>Waiting for responder...</strong>
+                        <p class="mb-0">Nearby volunteers have been notified.</p>
+                    </div>
+                    {% endif %}
+
+                    {% if emergency.bystander_mode_active %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Bystander Mode Active</strong>
+                        <p class="mb-0">
+                            <a href="{% url 'emergencies:bystander_guidance' emergency.emergency_id %}"
+                                class="btn btn-sm btn-info">
+                                View First-Aid Guidance
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for event in timeline %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div>
+                                <h6>{{ event.get_event_type_display }}</h6>
+                                <p class="mb-1">{{ event.description }}</p>
+                                <small class="text-muted">
+                                    {{ event.timestamp|date:"F d, Y H:i:s" }}
+                                    {% if event.actor %}
+                                    by {{ event.actor.username }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No timeline events yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            {% if user.role == 'volunteer' and emergency.status == 'active' %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'responders:accept_emergency' emergency.emergency_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-check-circle"></i> Accept Emergency
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'responders:decline_emergency' emergency.emergency_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Decline
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if user == emergency.primary_responder %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> Update Status</h5>
+                </div>
+                <div class="card-body">
+                    {% if emergency.status == 'responder_assigned' %}
+                    <form method="post" action="{% url 'responders:update_response_status' emergency.emergency_id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="en_route">
+                        <button type="submit" class="btn btn-info w-100 mb-2">
+                            <i class="bi bi-arrow-right-circle"></i> Mark En Route
+                        </button>
+                    </form>
+                    {% elif emergency.status == 'responder_en_route' %}
+                    <form method="post" action="{% url 'responders:update_response_status' emergency.emergency_id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="arrived">
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-geo-alt-fill"></i> Mark Arrived
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Stats -->
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Response Time</small>
+                        <h6>
+                            {% if emergency.get_response_time_minutes %}
+                            {{ emergency.get_response_time_minutes|floatformat:1 }} minutes
+                            {% else %}
+                            Waiting...
+                            {% endif %}
+                        </h6>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Time Elapsed</small>
+                        <h6>{{ emergency.triggered_at|timesince }}</h6>
+                    </div>
+                    {% if emergency.bystander_mode_active %}
+                    <div>
+                        <small class="text-muted">Bystander Mode</small>
+                        <h6><span class="badge bg-info">Active</span></h6>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize map
+        const map = window.GoldenMinutes.MapHelper.createMap('emergencyMap',
+            [{{ emergency.latitude }}, {{ emergency.longitude }}], 15);
+
+    // Add emergency marker
+    const emergency = {
+        emergency_id: '{{ emergency.emergency_id }}',
+        emergency_type: '{{ emergency.emergency_type }}',
+        emergency_type_display: '{{ emergency.get_emergency_type_display }}',
+        severity: '{{ emergency.severity }}',
+        status: '{{ emergency.status }}',
+        status_display: '{{ emergency.get_status_display }}',
+        latitude: {{ emergency.latitude }},
+    longitude: { { emergency.longitude } },
+    triggered_at: '{{ emergency.triggered_at|date:"Y-m-d H:i" }}'
+    };
+
+    window.GoldenMinutes.MapHelper.addEmergencyMarker(map, emergency);
+
+    // Add Navigation Button for Volunteers
+    {% if user.role == 'volunteer' %}
+    L.easyButton('bi-cursor-fill', function (btn, map) {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination={{ emergency.latitude }},{{ emergency.longitude }}`, '_blank');
+    }, 'Start Navigation').addTo(map);
+    {% endif %}
+
+    // Start real-time updates if emergency is active
+    {% if emergency.status != 'resolved' and emergency.status != 'cancelled' %}
+    window.GoldenMinutes.startEmergencyUpdates('{{ emergency.emergency_id }}');
+    {% endif %}
+
+    // Real-Time ETA Calculation
+    {% if emergency.primary_responder %}
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function updateETA() {
+        // Fetch responder's current location
+        fetch(`/api/responder-location/{{ emergency.primary_responder.id }}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.latitude && data.longitude) {
+                    const distance = calculateDistance(
+                        data.latitude,
+                        data.longitude,
+                        {{ emergency.latitude }},
+                { { emergency.longitude } }
+                    );
+
+        // Calculate ETA (assuming average speed of 40 km/h in city)
+        const avgSpeed = 40; // km/h
+        const timeInHours = distance / avgSpeed;
+        const timeInMinutes = Math.ceil(timeInHours * 60);
+
+        // Update UI
+        document.getElementById('etaDisplay').style.display = 'block';
+        document.getElementById('etaDistance').textContent = distance.toFixed(1) + ' km';
+
+        if (timeInMinutes < 1) {
+            document.getElementById('etaMinutes').textContent = 'Arriving now!';
+        } else if (timeInMinutes === 1) {
+            document.getElementById('etaMinutes').textContent = '1 minute';
+        } else {
+            document.getElementById('etaMinutes').textContent = timeInMinutes + ' minutes';
+        }
+
+        // Update progress bar (inverse - closer = more progress)
+        const maxDistance = 10; // km
+        const progress = Math.max(0, Math.min(100, ((maxDistance - distance) / maxDistance) * 100));
+        document.getElementById('etaProgress').style.width = progress + '%';
+    }
+            })
+            .catch (err => console.error('Error fetching responder location:', err));
+    }
+
+    // Update ETA every 10 seconds
+    updateETA();
+    setInterval(updateETA, 10000);
+    {% endif %}
+});
+</script>
+{% endblock %}

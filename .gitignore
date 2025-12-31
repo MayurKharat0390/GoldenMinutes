@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
+
+# Android/PWA
+.gemini/
+static/manifest.json
+# Keep manifest if needed? Actually manifest is code. Keep it.
+
+# Temp scripts
+test_alert.py
+inspect_user_relations.py
+fix_missing_profiles.py

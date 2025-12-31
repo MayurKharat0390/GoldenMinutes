@@ -1,0 +1,469 @@
+{% extends 'base.html' %}
+
+{% block title %}First-Aid Guidance - Golden Minutes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Bystander Mode Styles */
+    .bystander-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .emergency-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+    }
+
+    .emergency-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .emergency-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .help-status {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .help-status i {
+        font-size: 2rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Step Cards */
+    .step-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-left: 6px solid #ef4444;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .step-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .step-card.completed {
+        border-left-color: #10b981;
+        opacity: 0.7;
+    }
+
+    .step-number {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .step-card.completed .step-number {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .step-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .step-icon i {
+        font-size: 2rem;
+        color: #d97706;
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .step-instruction {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+    }
+
+    .step-warning {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-left: 4px solid #ef4444;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .step-warning strong {
+        color: #dc2626;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .step-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-complete {
+        flex: 1;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-complete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-complete:disabled {
+        background: #d1d5db;
+        cursor: not-allowed;
+    }
+
+    .btn-voice {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        min-width: 120px;
+    }
+
+    .btn-voice:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-voice.speaking {
+        animation: speaking 1s infinite;
+    }
+
+    @keyframes speaking {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .progress-bar-custom {
+        height: 12px;
+        background: #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        transition: width 0.5s ease;
+        border-radius: 6px;
+    }
+
+    .progress-text {
+        text-align: center;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    /* Emergency Contacts */
+    .emergency-contacts {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .emergency-contacts h3 {
+        color: #92400e;
+        margin-bottom: 1rem;
+    }
+
+    .contact-btn {
+        background: white;
+        border: 2px solid #d97706;
+        color: #92400e;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        width: 100%;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .contact-btn:hover {
+        background: #d97706;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bystander-container">
+    <!-- Emergency Header -->
+    <div class="emergency-header">
+        <h1><i class="bi bi-heart-pulse-fill me-2"></i>First-Aid Guidance</h1>
+        <p>{{ emergency.get_emergency_type_display }} Emergency</p>
+
+        <div class="help-status">
+            <i class="bi bi-clock-history"></i>
+            <div class="text-start">
+                <strong>Help is on the way</strong>
+                <p class="mb-0 small">Follow these steps while waiting for professional responders</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selector -->
+    <div class="progress-container">
+        <h5 class="mb-3"><i class="bi bi-translate me-2"></i>Select Language / भाषा चुनें / भाषा निवडा</h5>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="?lang=en"
+                class="btn {% if current_language == 'en' %}btn-danger{% else %}btn-outline-danger{% endif %} flex-fill">
+                <i class="bi bi-globe me-2"></i>English
+            </a>
+            <a href="?lang=hi"
+                class="btn {% if current_language == 'hi' %}btn-danger{% else %}btn-outline-danger{% endif %} flex-fill">
+                <i class="bi bi-globe me-2"></i>हिंदी (Hindi)
+            </a>
+            <a href="?lang=mr"
+                class="btn {% if current_language == 'mr' %}btn-danger{% else %}btn-outline-danger{% endif %} flex-fill">
+                <i class="bi bi-globe me-2"></i>मराठी (Marathi)
+            </a>
+        </div>
+        {% if current_language != 'en' %}
+        <div class="alert alert-info mt-3 mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            {% if current_language == 'hi' %}
+            निर्देश हिंदी में दिखाए जा रहे हैं। आवाज मार्गदर्शन के लिए "सुनें" बटन दबाएं।
+            {% elif current_language == 'mr' %}
+            सूचना मराठीमध्ये दर्शविल्या जात आहेत. आवाज मार्गदर्शनासाठी "ऐका" बटण दाबा.
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Progress Tracker -->
+    <div class="progress-container">
+        <div class="progress-bar-custom">
+            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">
+            <span id="completedSteps">0</span> of <span id="totalSteps">{{ guidance_steps|length }}</span> steps
+            completed
+        </div>
+    </div>
+
+    <!-- Instruction Steps -->
+    <div id="stepsContainer">
+        {% for step in guidance_steps %}
+        <div class="step-card" data-step="{{ step.step_number }}">
+            <div class="step-number">{{ step.step_number }}</div>
+
+            <div class="step-icon">
+                <i class="{{ step.icon_class }}"></i>
+            </div>
+
+            <h3 class="step-title">{{ step.title }}</h3>
+
+            <p class="step-instruction">{{ step.instruction }}</p>
+
+            {% if step.warning %}
+            <div class="step-warning">
+                <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>WARNING</strong>
+                {{ step.warning }}
+            </div>
+            {% endif %}
+
+            <div class="step-actions">
+                <button class="btn-voice" onclick="speakStep({{ step.step_number }})">
+                    <i class="bi bi-volume-up-fill me-2"></i>Listen
+                </button>
+                <button class="btn-complete" onclick="markComplete({{ step.step_number }})">
+                    <i class="bi bi-check-circle-fill me-2"></i>Mark Complete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Emergency Contacts -->
+    <div class="emergency-contacts">
+        <h3><i class="bi bi-telephone-fill me-2"></i>Emergency Contacts</h3>
+        <button class="contact-btn" onclick="callEmergency('112')">
+            <i class="bi bi-telephone-fill me-2"></i>Call Emergency Services (112)
+        </button>
+        <button class="contact-btn" onclick="callEmergency('108')">
+            <i class="bi bi-ambulance me-2"></i>Call Ambulance (108)
+        </button>
+    </div>
+</div>
+
+<script>
+    let completedSteps = new Set();
+    const totalSteps = {{ guidance_steps| length }};
+
+    function markComplete(stepNumber) {
+        const card = document.querySelector(`[data-step="${stepNumber}"]`);
+        const btn = card.querySelector('.btn-complete');
+
+        if (completedSteps.has(stepNumber)) {
+            // Unmark
+            completedSteps.delete(stepNumber);
+            card.classList.remove('completed');
+            btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Mark Complete';
+        } else {
+            // Mark complete
+            completedSteps.add(stepNumber);
+            card.classList.add('completed');
+            btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Completed';
+
+            // Scroll to next step
+            const nextCard = document.querySelector(`[data-step="${stepNumber + 1}"]`);
+            if (nextCard) {
+                nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const progress = (completedSteps.size / totalSteps) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('completedSteps').textContent = completedSteps.size;
+    }
+
+    function speakStep(stepNumber) {
+        const card = document.querySelector(`[data-step="${stepNumber}"]`);
+        const btn = card.querySelector('.btn-voice');
+        const title = card.querySelector('.step-title').textContent;
+        const instruction = card.querySelector('.step-instruction').textContent;
+        const warning = card.querySelector('.step-warning');
+
+        let text = `Step ${stepNumber}. ${title}. ${instruction}`;
+        if (warning) {
+            text += ` Warning: ${warning.textContent.replace('WARNING', '')}`;
+        }
+
+        if ('speechSynthesis' in window) {
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            // Set language based on current selection
+            const currentLang = '{{ current_language }}';
+            if (currentLang === 'hi') {
+                utterance.lang = 'hi-IN';  // Hindi (India)
+            } else if (currentLang === 'mr') {
+                utterance.lang = 'mr-IN';  // Marathi (India)
+            } else {
+                utterance.lang = 'en-US';  // English (US)
+            }
+
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            btn.classList.add('speaking');
+            btn.innerHTML = '<i class="bi bi-pause-fill me-2"></i>Speaking...';
+
+            utterance.onend = () => {
+                btn.classList.remove('speaking');
+                btn.innerHTML = '<i class="bi bi-volume-up-fill me-2"></i>Listen';
+            };
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert('Text-to-speech not supported in your browser');
+        }
+    }
+
+    function callEmergency(number) {
+        if (confirm(`Call ${number}?`)) {
+            window.location.href = `tel:${number}`;
+        }
+    }
+
+    // Auto-speak first step on load (optional)
+    window.addEventListener('DOMContentLoaded', () => {
+        // Uncomment to auto-play first step
+        // setTimeout(() => speakStep(1), 1000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Control - Golden Minutes{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet Routing Machine CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
+<style>
+    /* Full Screen Map Layout */
+    .map-wrapper {
+        position: relative;
+        height: calc(100vh - 70px);
+        /* Fill remaining height */
+        width: 100%;
+        overflow: hidden;
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+        z-index: 0;
+    }
+
+    /* Standard Reset for Leaflet */
+    .leaflet-pane,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow,
+    .leaflet-tile-container,
+    .leaflet-pane>svg,
+    .leaflet-pane>canvas,
+    .leaflet-zoom-box,
+    .leaflet-image-layer,
+    .leaflet-layer {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    /* Custom Pulsing Pin */
+    .custom-pin {
+        background: transparent;
+        border: none;
+    }
+
+    .pin-wrap {
+        position: relative;
+        width: 50px;
+        height: 50px;
+    }
+
+    .pin-body {
+        width: 36px;
+        height: 36px;
+        border-radius: 50% 50% 50% 0;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 7px;
+        top: 0px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border: 2px solid white;
+    }
+
+    .pin-body i {
+        transform: rotate(45deg);
+        color: white;
+        font-size: 18px;
+    }
+
+    .pin-pulse {
+        width: 100%;
+        height: 100%;
+        background: inherit;
+        border-radius: 50%;
+        position: absolute;
+        z-index: 1;
+        opacity: 0;
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+        0% {
+            transform: scale(0.5);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: scale(2.5);
+            opacity: 0;
+        }
+    }
+
+    /* Colors */
+    .bg-critical {
+        background: #dc3545;
+    }
+
+    .bg-high {
+        background: #fd7e14;
+    }
+
+    .bg-moderate {
+        background: #ffc107;
+    }
+
+    .bg-volunteer {
+        background: #0d6efd;
+    }
+
+    /* Glass Overlays */
+    .map-overlay {
+        position: absolute;
+        z-index: 1000;
+        pointer-events: none;
+        /* Let clicks pass through container */
+    }
+
+    .top-bar-center {
+        top: 1.5rem;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        pointer-events: all;
+    }
+
+    .hud-panel {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding: 0.75rem 2rem;
+        border-radius: 100px;
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .hud-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1;
+    }
+
+    .hud-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6b7280;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .hud-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .hud-divider {
+        width: 1px;
+        height: 24px;
+        background: #e5e7eb;
+    }
+
+    /* -- Quick Action Floating Cards -- */
+    .bottom-panel-container {
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        width: 350px;
+        max-height: 60vh;
+        overflow-y: auto;
+        pointer-events: none;
+        /* Container pass-through */
+    }
+
+    .emergency-card-glass {
+        pointer-events: all;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid transparent;
+        /* Status Color */
+    }
+
+    .emergency-card-glass:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .emergency-card-glass.critical {
+        border-left-color: #dc3545;
+    }
+
+    .emergency-card-glass.high {
+        border-left-color: #fd7e14;
+    }
+
+    .emergency-card-glass.moderate {
+        border-left-color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="map-wrapper">
+        <!-- Command Center HUD (Top) -->
+        <div class="map-overlay top-bar-center">
+            <div class="hud-panel">
+                <div class="hud-stat">
+                    <div class="hud-label text-danger">Active Alerts</div>
+                    <div class="hud-value d-flex align-items-center gap-2">
+                        <span class="spinner-grow spinner-grow-sm text-danger" role="status"
+                            style="width: 0.5rem; height: 0.5rem;"></span>
+                        <span id="activeCount">0</span>
+                    </div>
+                </div>
+
+                <div class="hud-divider"></div>
+
+                <div class="hud-stat">
+                    <div class="hud-label text-primary">Grid Status</div>
+                    <div class="hud-value" style="font-size: 1rem;">
+                        <i class="bi bi-shield-check text-success me-1"></i> ONLINE
+                    </div>
+                </div>
+
+                <div class="hud-divider"></div>
+
+                <!-- Recenter Button as HUD Action -->
+                <button onclick="centerMap()" class="btn btn-sm btn-link text-secondary p-0" title="Recenter">
+                    <i class="bi bi-crosshair fs-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="map"></div>
+
+        <!-- Floating Quick Actions / List (Bottom Left) -->
+        <div class="bottom-panel-container" id="emergencyFloatList">
+            <!-- Initial State -->
+            <div class="hud-panel justify-content-center py-2 px-3 mb-2" style="background: rgba(255,255,255,0.8);">
+                <small class="text-secondary fw-bold" style="letter-spacing: 0.5px;">SCANNING GRID...</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+    var map;
+    var userMarker;
+    var emergencyMarkers = [];
+    var routeControls = [];
+    var userLocation = null;
+    var hasCentered = false;
+
+    // Custom Icon
+    function createPinIcon(type, colorClass) {
+        var iconHtml = type === 'volunteer' ? '<i class="bi bi-person-fill"></i>' : '<i class="bi bi-exclamation-lg"></i>';
+        var bgClass = type === 'volunteer' ? 'bg-volunteer' : colorClass.replace('pin-', 'bg-');
+
+        return L.divIcon({
+            className: 'custom-pin',
+            html: `
+                <div class="pin-wrap">
+                    <div class="pin-pulse ${bgClass}"></div>
+                    <div class="pin-body ${bgClass}">
+                        ${iconHtml}
+                    </div>
+                </div>
+            `,
+            iconSize: [50, 50],
+            iconAnchor: [25, 45],
+            popupAnchor: [0, -45]
+        });
+    }
+
+    function initMap() {
+        // Dark Mode Map Tile (Optional, looks premium)
+        map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            maxZoom: 20
+        }).addTo(map);
+
+        getUserLocation();
+        loadEmergencies();
+        setInterval(loadEmergencies, 15000); // Fast refresh
+    }
+
+    function centerMap() {
+        if (userLocation) map.flyTo([userLocation.lat, userLocation.lng], 15);
+    }
+
+    function getUserLocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+                    userLocation = { lat, lng };
+
+                    if (userMarker) userMarker.setLatLng([lat, lng]);
+                    else {
+                        userMarker = L.marker([lat, lng], {
+                            icon: createPinIcon('volunteer', 'pin-volunteer')
+                        }).addTo(map);
+
+                        if (!hasCentered) {
+                            map.setView([lat, lng], 14);
+                            hasCentered = true;
+                        }
+                    }
+                },
+                (err) => { console.warn("GPS Fail", err); },
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+            );
+        }
+    }
+
+    // --- Helper: Haversine Distance ---
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return (R * c).toFixed(1); // Returns string "1.5"
+    }
+
+    // --- Helper: Time Ago ---
+    function formatTimeAgo(isoString) {
+        const date = new Date(isoString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        if (seconds < 60) return 'Just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return minutes + 'm ago';
+        const hours = Math.floor(minutes / 60);
+        return hours + 'h ago';
+    }
+
+    var activeRoutes = []; // Store route controls to clean up
+
+    function loadEmergencies() {
+        fetch('/emergencies/api/active/')
+            .then(res => res.json())
+            .then(data => {
+                // Keep markers but update positions? For now, full refresh is safer for demo
+                emergencyMarkers.forEach(m => map.removeLayer(m));
+                emergencyMarkers = [];
+
+                // Clear routes
+                activeRoutes.forEach(c => map.removeControl(c));
+                activeRoutes = [];
+
+                const listContainer = document.getElementById('emergencyFloatList');
+                listContainer.innerHTML = '';
+
+                document.getElementById('activeCount').innerText = data.emergencies.length;
+
+                // Sort by distance if user location is known
+                if (userLocation) {
+                    data.emergencies.sort((a, b) => {
+                        const distA = calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude);
+                        const distB = calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude);
+                        return distA - distB;
+                    });
+                }
+
+                if (data.emergencies.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="hud-panel justify-content-center flex-column py-3 px-4 mb-2 shadow-sm" style="background: rgba(255,255,255,0.9);">
+                            <i class="bi bi-shield-check text-success fs-2 mb-2"></i>
+                            <h6 class="fw-bold mb-0">Sector Secure</h6>
+                            <small class="text-muted">Scanning Grid...</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.emergencies.forEach(e => {
+                    var sev = (e.severity || 'high').toLowerCase();
+                    var m = L.marker([e.latitude, e.longitude], {
+                        icon: createPinIcon('emergency', 'pin-' + sev)
+                    }).addTo(map);
+
+                    m.bindPopup(`<b class="text-danger">${e.emergency_type_display}</b><br>${e.status_display}`);
+                    emergencyMarkers.push(m);
+
+                    // Calculate Distance
+                    let distDisplay = "Locating...";
+                    if (userLocation) {
+                        const km = calculateDistance(userLocation.lat, userLocation.lng, e.latitude, e.longitude);
+                        distDisplay = `${km}km away`;
+                    }
+
+                    // DEBUG: Log to console to see actual status values
+                    console.log('Emergency:', e.emergency_type_display, '| Status:', e.status, '| Display:', e.status_display, '| UserLoc:', !!userLocation);
+
+                    // Route Logic: Only show route if Accepted/Dispatched
+                    // Assuming status 'D' is Dispatched/In Progress
+                    if (userLocation && (e.status === 'D' || e.status === 'I')) {
+                        console.log('✓ Drawing route for:', e.emergency_id);
+                        var routing = L.Routing.control({
+                            waypoints: [
+                                L.latLng(userLocation.lat, userLocation.lng),
+                                L.latLng(e.latitude, e.longitude)
+                            ],
+                            lineOptions: { styles: [{ color: '#0d6efd', opacity: 0.7, weight: 5 }] },
+                            createMarker: function () { return null; }, // No extra markers
+                            addWaypoints: false,
+                            draggableWaypoints: false,
+                            fitSelectedRoutes: false,
+                            show: false // Hide text instructions
+                        }).addTo(map);
+                        activeRoutes.push(routing);
+                    } else {
+                        console.log('✗ No route - Status:', e.status, 'not D or I');
+                    }
+
+                    // Floating Card
+                    var item = document.createElement('div');
+                    item.className = `emergency-card-glass ${sev}`;
+
+                    item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-danger mb-0 text-uppercase" style="font-size:0.9rem; letter-spacing:0.5px;">
+                                    <i class="bi bi-broadcast me-1"></i> ${e.emergency_type_display}
+                                </h6>
+                                <div class="text-secondary mt-1" style="font-size: 0.8rem; font-weight: 500;">
+                                    <i class="bi bi-geo-alt-fill me-1"></i> ${distDisplay}
+                                    <span class="mx-1">•</span> 
+                                    <span class="text-muted">${formatTimeAgo(e.triggered_at)}</span>
+                                    <span class="mx-1">•</span>
+                                    <span class="badge bg-secondary" style="font-size:0.65rem;">${e.status_display}</span>
+                                </div>
+                            </div>
+                            <a href="/emergencies/${e.emergency_id}/" class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-bold">
+                                VIEW
+                            </a>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            });
+    }
+
+    function updateRoutes() {
+        // Handled inside loadEmergencies now to sync with data
+    }
+
+    document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %}

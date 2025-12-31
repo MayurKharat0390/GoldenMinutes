@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - Golden Minutes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .metric-info h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1;
+        color: #1f2937;
+    }
+
+    .metric-info p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .icon-blue {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .icon-post {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .icon-amber {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .icon-red {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-header {
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chart-header h4 {
+        margin: 0;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    @media (max-width: 768px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Analytics Dashboard</h1>
+            <p class="text-muted">System performance overview for the last 30 days</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-2"></i>Export Report
+        </button>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="stat-grid">
+        <div class="metric-card">
+            <div class="metric-icon icon-red">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="metric-info">
+                <h3>{{ total_emergencies }}</h3>
+                <p>Total Emergencies</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-post">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+            <div class="metric-info">
+                <h3>{{ total_lives_saved }}</h3>
+                <p>Lives Saved</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="metric-info">
+                <h3>{{ total_volunteers }}</h3>
+                <p>Active Volunteers</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-amber">
+                <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <div class="metric-info">
+                <h3>{{ avg_response_time }}m</h3>
+                <p>Avg Response Time</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <!-- Daily Trends -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4><i class="bi bi-calendar-check me-2"></i>Daily Emergencies</h4>
+            </div>
+            <canvas id="trendChart"></canvas>
+        </div>
+
+        <!-- Distribution -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4><i class="bi bi-pie-chart-fill me-2"></i>Emergency Types</h4>
+            </div>
+            <canvas id="typeChart"></canvas>
+        </div>
+
+        <!-- Peak Hours -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4><i class="bi bi-clock-fill me-2"></i>Peak Hours Analysis</h4>
+            </div>
+            <canvas id="peakChart"></canvas>
+        </div>
+
+        <!-- Efficiency Funnel -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4><i class="bi bi-filter-circle-fill me-2"></i>Response Funnel</h4>
+            </div>
+            <canvas id="funnelChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Location Scatter Plot -->
+    <div class="chart-card mb-4">
+        <div class="chart-header">
+            <h4><i class="bi bi-geo-alt-fill me-2"></i>Emergency Hotspots (Location Distribution)</h4>
+        </div>
+        <div style="height: 400px;">
+            <canvas id="heatmapChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Safe Data Loading
+    const dates = JSON.parse('{{ dates|escapejs }}');
+    const counts = JSON.parse('{{ counts|escapejs }}');
+    const typeLabels = JSON.parse('{{ type_labels|escapejs }}');
+    const typeCounts = JSON.parse('{{ type_counts|escapejs }}');
+    const peakLabels = JSON.parse('{{ peak_labels|escapejs }}');
+    const peakCounts = JSON.parse('{{ peak_counts|escapejs }}');
+    const funnelData = JSON.parse('{{ funnel_data|escapejs }}');
+    const heatmapData = JSON.parse('{{ heatmap_data|escapejs }}');
+
+    // 1. Daily Trend Chart
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Emergencies',
+                data: counts,
+                borderColor: '#e11d48',
+                backgroundColor: 'rgba(225, 29, 72, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#e11d48',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 2. Type Distribution Chart
+    const ctxType = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctxType, {
+        type: 'doughnut',
+        data: {
+            labels: typeLabels,
+            datasets: [{
+                data: typeCounts,
+                backgroundColor: [
+                    '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 3. Peak Hours Chart
+    const ctxPeak = document.getElementById('peakChart').getContext('2d');
+    new Chart(ctxPeak, {
+        type: 'bar',
+        data: {
+            labels: peakLabels,
+            datasets: [{
+                label: 'Emergencies',
+                data: peakCounts,
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 4. Funnel Chart
+    const ctxFunnel = document.getElementById('funnelChart').getContext('2d');
+    new Chart(ctxFunnel, {
+        type: 'bar',
+        data: {
+            labels: ['Triggered', 'Accepted', 'Arrived', 'Resolved'],
+            datasets: [{
+                label: 'Count',
+                data: funnelData,
+                backgroundColor: [
+                    '#ef4444', // Triggered (Red)
+                    '#f59e0b', // Accepted (Orange)
+                    '#3b82f6', // Arrived (Blue)
+                    '#10b981'  // Resolved (Green)
+                ],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true }
+            }
+        }
+    });
+
+    // 5. Heatmap (Scatter)
+    const ctxHeatmap = document.getElementById('heatmapChart').getContext('2d');
+    new Chart(ctxHeatmap, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Emergency Locations',
+                data: heatmapData,
+                backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return `Lat: ${context.parsed.y}, Long: ${context.parsed.x}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Longitude' } },
+                y: { title: { display: true, text: 'Latitude' } }
+            }
+        }
+    });
+</script>
+{% endblock %}

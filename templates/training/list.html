@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Training Center - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8">
+            <h1 class="fw-bold display-5 mb-2"><i class="bi bi-mortarboard-fill text-primary me-3"></i>Training Center
+            </h1>
+            <p class="text-muted lead">Upgrade your skills and earn verified badges.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="p-3 bg-white rounded-4 shadow-sm d-inline-block">
+                <span class="d-block text-muted small fw-bold text-uppercase">Modules Completed</span>
+                <span class="display-6 fw-bold text-success">{{ completed_ids|length }}/{{ modules|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for module in modules %}
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift">
+                <!-- Status Stripe -->
+                {% if module.id in completed_ids %}
+                <div class="position-absolute top-0 start-0 w-100 bg-success" style="height: 6px;"></div>
+                {% else %}
+                <div class="position-absolute top-0 start-0 w-100 bg-secondary opacity-25" style="height: 6px;"></div>
+                {% endif %}
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        {% if module.id in completed_ids %}
+                        <span class="badge bg-success-subtle text-success"><i
+                                class="bi bi-check-circle-fill me-1"></i>Completed</span>
+                        {% else %}
+                        <span></span> <!-- Spacer to keep layout if needed, or remove completely -->
+                        {% endif %}
+                    </div>
+
+                    <h3 class="card-title fw-bold h4 mb-2">{{ module.title }}</h3>
+                    <p class="card-text text-muted mb-4 flex-grow-1">{{ module.description|truncatewords:20 }}</p>
+
+                    <div class="mt-auto">
+                        {% if module.badge_id_reward %}
+                        <div class="d-flex align-items-center mb-3 text-primary small">
+                            <i class="bi bi-award-fill me-2"></i>
+                            <span>Rewards: <strong>{{ module.badge_id_reward|title }}</strong> Badge</span>
+                        </div>
+                        {% endif %}
+
+                        <a href="{% url 'training:detail' module.slug %}"
+                            class="btn {% if module.id in completed_ids %}btn-outline-primary{% else %}btn-primary{% endif %} w-100 rounded-pill fw-bold py-2">
+                            {% if module.id in completed_ids %}
+                            Review Material
+                            {% else %}
+                            Start Module
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="text-muted">
+                <i class="bi bi-journal-x display-1 mb-3"></i>
+                <h3>No training modules available yet.</h3>
+                <p>Check back soon for new content!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+{% endblock %}

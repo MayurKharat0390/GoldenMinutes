@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Volunteer Registration - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-heart-pulse-fill"></i> Become a Verified Responder
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Thank you for volunteering!</strong>
+                        <p class="mb-0 mt-2">
+                            As a verified responder, you'll be able to respond to emergencies in your area.
+                            Your profile will be reviewed by our admin team before activation.
+                        </p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="role_level" class="form-label"><strong>Your Role Level *</strong></label>
+                            <select class="form-select" id="role_level" name="role_level" required>
+                                <option value="general">General Volunteer</option>
+                                <option value="first_aid">First-Aid Trained</option>
+                                <option value="medical">Medical Professional</option>
+                            </select>
+                            <small class="text-muted">Select your highest qualification</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="bio" class="form-label"><strong>Bio</strong></label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3"
+                                placeholder="Tell us about your experience and why you want to volunteer..."></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="specializations" class="form-label"><strong>Specializations</strong></label>
+                            <input type="text" class="form-control" id="specializations" name="specializations"
+                                placeholder="e.g., CPR, First Aid, Fire Safety (comma-separated)">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="availability_radius_km" class="form-label"><strong>Availability Radius (km)
+                                    *</strong></label>
+                            <input type="number" class="form-control" id="availability_radius_km"
+                                name="availability_radius_km" value="5" min="1" max="20" required>
+                            <small class="text-muted">How far are you willing to travel to respond?</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_document" class="form-label"><strong>ID Document</strong></label>
+                            <input type="file" class="form-control" id="id_document" name="id_document"
+                                accept="image/*,.pdf">
+                            <small class="text-muted">Upload a government-issued ID (optional for demo)</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="certification" class="form-label"><strong>Certification</strong></label>
+                            <input type="file" class="form-control" id="certification" name="certification"
+                                accept="image/*,.pdf">
+                            <small class="text-muted">Upload relevant certifications (optional)</small>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-shield-exclamation"></i>
+                            <strong>Important:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>You will be notified of emergencies within your availability radius</li>
+                                <li>You can accept or decline emergency requests</li>
+                                <li>Your profile must be verified by admin before activation</li>
+                                <li>You should NOT perform invasive medical procedures unless qualified</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="volunteer_terms" required>
+                            <label class="form-check-label" for="volunteer_terms">
+                                I understand my responsibilities as a volunteer responder and agree to act within my
+                                qualifications.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            <i class="bi bi-check-circle"></i> Submit for Verification
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

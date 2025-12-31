@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Mission Control - Golden Minutes{% endblock %}
+
+{% block content %}
+<!-- Premium Dashboard Styles -->
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+
+    .stat-card-premium {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: transform 0.2s;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-card-premium:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .emergency-card-active {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+        border-left: 5px solid #dc3545;
+        border-radius: 1rem;
+    }
+
+    .toggle-switch {
+        width: 60px;
+        height: 34px;
+    }
+
+    .avatar-ring {
+        background: white;
+        padding: 4px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container-fluid px-4 py-5">
+    <div class="row g-4">
+        <!-- Sidebar: Profile & Status -->
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 h-100">
+                <div class="text-center mb-4">
+                    <div class="avatar-ring d-inline-block mb-3">
+                        <div class="bg-gradient-to-r from-blue-400 to-blue-600 rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm"
+                            style="width: 100px; height: 100px; font-size: 2.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1">{{ user.username }}</h3>
+                    <p class="text-muted mb-2">{{ profile.get_role_level_display }}</p>
+
+                    <span class="badge rounded-pill px-3 py-2 bg-gradient-success shadow-sm"
+                        style="background: linear-gradient(to right, #00b09b, #96c93d);">
+                        <i class="bi bi-shield-check me-1"></i> {{ profile.get_verification_status_display }}
+                    </span>
+                </div>
+
+                <hr class="opacity-10 my-4">
+
+                <!-- Impact Score -->
+                <div class="text-center mb-4">
+                    <small class="text-uppercase text-muted fw-bold letter-spacing-1">Impact Score</small>
+                    <h1 class="display-3 fw-bold text-transparent bg-clip-text"
+                        style="background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        {{ profile.impact_score }}
+                    </h1>
+                </div>
+
+                <!-- Availability Toggle -->
+                <div class="card bg-light border-0 rounded-4 p-3 mt-auto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 fw-bold">Duty Status</h6>
+                            <small class="text-muted">Accepting Alerts</small>
+                        </div>
+                        <div class="form-check form-switch cursor-pointer">
+                            <!-- FIXED LINE BELOW -->
+                            {% if profile.is_available %}
+                            <input class="form-check-input toggle-switch" type="checkbox" id="availabilityToggle"
+                                checked style="cursor: pointer;">
+                            {% else %}
+                            <input class="form-check-input toggle-switch" type="checkbox" id="availabilityToggle"
+                                style="cursor: pointer;">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <span
+                            class="badge bg-{% if profile.is_available %}success{% else %}secondary{% endif %} rounded-pill"
+                            id="statusLabel">
+                            {% if profile.is_available %}ONLINE{% else %}OFFLINE{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Stats Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card-premium">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-3 me-3">
+                                <i class="bi bi-lightning-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0">{{ profile.total_responses }}</h3>
+                                <small class="text-muted">Responses</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card-premium">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                                <i class="bi bi-heart-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0">{{ profile.successful_responses }}</h3>
+                                <small class="text-muted">Lives Aided</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card-premium">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info bg-opacity-10 text-info rounded-circle p-3 me-3">
+                                <i class="bi bi-stopwatch-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0">{{ profile.average_response_time_minutes|floatformat:1 }}m</h3>
+                                <small class="text-muted">Avg Response</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Emergencies -->
+            <h5 class="fw-bold mb-3 d-flex align-items-center">
+                <span class="spinner-grow text-danger spinner-grow-sm me-2"></span>
+                Live Alerts
+                <span class="badge bg-danger rounded-pill ms-2">{{ active_emergencies.count }}</span>
+            </h5>
+
+            {% if active_emergencies %}
+            <div class="row g-3 mb-5">
+                {% for emergency in active_emergencies %}
+                <div class="col-md-12">
+                    <div class="card emergency-card-active shadow-sm p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-danger me-2">SOS</span>
+                                    <h5 class="mb-0 fw-bold text-dark">{{ emergency.get_emergency_type_display }}</h5>
+                                </div>
+                                <p class="mb-1 text-muted">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    Near {{ emergency.user.username }}'s location (~2.5 km)
+                                </p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ emergency.triggered_at|timesince }} ago
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end mt-3 mt-md-0">
+                                <a href="{% url 'emergencies:emergency_detail' emergency.emergency_id %}"
+                                    class="btn btn-danger btn-lg rounded-pill px-4 shadow-sm w-100">
+                                    RESPOND NOW <i class="bi bi-arrow-right-short"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="glass-panel text-center py-5 mb-5">
+                <div class="text-muted opacity-50 mb-3">
+                    <i class="bi bi-shield-check" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="text-muted">All Quiet on the Front</h5>
+                <p class="small text-muted">No active emergencies in your sector.</p>
+            </div>
+            {% endif %}
+
+            <!-- Recent History -->
+            <div class="glass-panel p-4">
+                <h6 class="fw-bold text-uppercase text-muted letter-spacing-1 mb-4">Mission History</h6>
+
+                {% if my_responses %}
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle">
+                        <thead class="text-muted small border-bottom">
+                            <tr>
+                                <th>INCIDENT</th>
+                                <th>STATUS</th>
+                                <th>TIMELINE</th>
+                                <th class="text-end">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in my_responses %}
+                            <tr class="border-bottom">
+                                <td class="py-3 fw-bold">{{ response.emergency.get_emergency_type_display }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ response.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ response.notified_at|date:"M d, H:i" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'emergencies:emergency_detail' response.emergency.emergency_id %}"
+                                        class="btn btn-sm btn-light rounded-pill px-3">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No missions completed yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('availabilityToggle').addEventListener('change', function () {
+        const statusLabel = document.getElementById('statusLabel');
+        // Opimistic Update
+        const isChecked = this.checked;
+        statusLabel.textContent = isChecked ? 'ONLINE' : 'OFFLINE';
+        statusLabel.className = isChecked ? 'badge bg-success rounded-pill' : 'badge bg-secondary rounded-pill';
+
+        fetch('/responders/api/toggle-availability/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.GoldenMinutes.getCookie('csrftoken')
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    // Revert if failed
+                    this.checked = !isChecked;
+                }
+            });
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(function () {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Trigger SOS - Golden Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h2 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> EMERGENCY SOS
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Before you proceed:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>This will alert nearby verified responders</li>
+                            <li>Your location will be shared with responders</li>
+                            <li>Please call <strong>112</strong> for official emergency services</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" id="sosForm">
+                        {% csrf_token %}
+
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+
+                        <div class="mb-4">
+                            <label class="form-label"><strong>Emergency Type *</strong></label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="emergency_type" id="accident"
+                                            value="accident" required>
+                                        <label class="form-check-label" for="accident">
+                                            <i class="bi bi-car-front-fill text-danger"></i> Accident
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="emergency_type" id="medical"
+                                            value="medical" required>
+                                        <label class="form-check-label" for="medical">
+                                            <i class="bi bi-heart-pulse-fill text-danger"></i> Medical Emergency
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="emergency_type" id="fire"
+                                            value="fire" required>
+                                        <label class="form-check-label" for="fire">
+                                            <i class="bi bi-fire text-danger"></i> Fire
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="emergency_type"
+                                            id="personal_safety" value="personal_safety" required>
+                                        <label class="form-check-label" for="personal_safety">
+                                            <i class="bi bi-shield-exclamation text-warning"></i> Personal Safety
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="emergency_type" id="disaster"
+                                            value="disaster" required>
+                                        <label class="form-check-label" for="disaster">
+                                            <i class="bi bi-exclamation-octagon-fill text-danger"></i> Disaster
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Additional Details (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                placeholder="Describe the situation briefly..."></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-geo-alt-fill text-danger"></i> Your Location</h6>
+                                    <p class="mb-0" id="locationStatus">
+                                        <span class="spinner-border spinner-border-sm"></span> Getting your location...
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="consent" required>
+                            <label class="form-check-label" for="consent">
+                                I consent to sharing my location with nearby responders and understand this does not
+                                replace calling 112.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger btn-lg w-100" id="submitBtn" disabled>
+                            <i class="bi bi-exclamation-triangle-fill"></i> TRIGGER SOS ALERT
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submitBtn = document.getElementById('submitBtn');
+        const locationStatus = document.getElementById('locationStatus');
+        const latInput = document.getElementById('latitude');
+        const lonInput = document.getElementById('longitude');
+
+        // Get user location - Fast Mode
+        if ('geolocation' in navigator) {
+
+            function onLocationFound(position) {
+                latInput.value = position.coords.latitude;
+                lonInput.value = position.coords.longitude;
+
+                locationStatus.innerHTML = `
+                <i class="bi bi-check-circle-fill text-success"></i>
+                Location captured: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}
+                <br><small class="text-muted">(Accuracy: ${Math.round(position.coords.accuracy)}m)</small>
+                `;
+
+                submitBtn.disabled = false;
+            }
+
+            function onLocationError(error) {
+                console.warn('Geo error:', error.message);
+                if (latInput.value === "") {
+                    // Only show visual error if we still have NO location at all
+                    locationStatus.innerHTML = `
+                        <i class="bi bi-exclamation-circle text-warning"></i>
+                        Still finding location... Please wait. <br>
+                        <small>(${error.message})</small>
+                    `;
+                }
+            }
+
+            // 1. FASTEST: Request low accuracy (Cell/WiFi/IP)
+            // Increased timeout to 15s to allow for real signal acquisition
+            navigator.geolocation.getCurrentPosition(
+                onLocationFound,
+                (e) => {
+                    console.warn('Low accuracy failed', e);
+                    // If fast mode fails, show a Retry button with specific error
+                    if (latInput.value === "") {
+                        let errorMsg = "Unable to get location.";
+                        if (e.code === 1) errorMsg = "Location permission denied.";
+                        if (e.code === 2) errorMsg = "Position unavailable (Check GPS/WiFi).";
+                        if (e.code === 3) errorMsg = "Request timed out.";
+
+                        locationStatus.innerHTML = `
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle-fill"></i> ${errorMsg}<br>
+                                <button type="button" class="btn btn-sm btn-danger mt-2" onclick="window.location.reload()">
+                                    <i class="bi bi-arrow-clockwise"></i> Re-scan Location
+                                </button>
+                            </div>
+                        `;
+                    }
+                },
+                { maximumAge: 0, timeout: 15000, enableHighAccuracy: false }
+            );
+
+            // 2. PRECISE: Start watching for better GPS signal
+            const watchId = navigator.geolocation.watchPosition(
+                onLocationFound,
+                onLocationError,
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
+            );
+
+            // Stop watching when form submitted
+            document.getElementById('sosForm').addEventListener('submit', () => {
+                navigator.geolocation.clearWatch(watchId);
+            });
+        } else {
+            // Fallback for non-supported browsers
+            console.log("Geo not supported - using fallback");
+            latInput.value = "20.5937";
+            lonInput.value = "78.9629";
+            submitBtn.disabled = false;
+            locationStatus.innerHTML = `
+        < i class="bi bi-x-circle-fill text-danger" ></i >
+            Geolocation not supported by your browser.
+            `;
+        }
+
+        // Form submission confirmation
+        document.getElementById('sosForm').addEventListener('submit', function (e) {
+            if (!confirm('Are you sure you want to trigger an SOS emergency alert? This will notify nearby responders immediately.')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

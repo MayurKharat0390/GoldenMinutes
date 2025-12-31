@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+
+{% block title %}Golden Minutes - Join the Grid{% endblock %}
+
+{% block content %}
+<style>
+    /* Specific overrides for Home Page */
+    .hero-heading {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #0B0F19;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-sub {
+        font-size: 1.125rem;
+        color: #4B5563;
+        line-height: 1.6;
+        max-width: 540px;
+        margin-bottom: 2.5rem;
+    }
+
+    .badge-live {
+        background: #FEF2F2;
+        color: #EF4444;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        border: 1px solid #FEE2E2;
+    }
+
+    /* Globe Animation Simulation */
+    .globe-placeholder {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 30% 30%, #1e40af, #0f172a);
+        position: relative;
+        opacity: 0.8;
+    }
+
+    .globe-grid-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 40px 40px;
+        border-radius: 50%;
+        transform: scale(1.5) rotate(15deg);
+    }
+
+    .ping-dot {
+        width: 12px;
+        height: 12px;
+        background: #EF4444;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+        animation: ping 2s infinite;
+    }
+
+    @keyframes ping {
+        0% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+
+        100% {
+            box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+        }
+    }
+
+    @media(max-width: 992px) {
+        .hero-heading {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<!-- Hero Section with Local Image Background -->
+<section class="position-relative pt-5 pb-5 overflow-hidden" style="min-height: 85vh;">
+
+    <!-- The Image Layer (Z-Index 0) -->
+    <div class="hero-bg-wrapper position-absolute top-0 start-0 w-100 h-100" style="z-index: 0;">
+        <img src="/static/images/hero_volunteer.jpg" alt="Volunteer Hero"
+            style="width: 100%; height: 100%; object-fit: cover; object-position: center center;">
+
+        <!-- Gradient fades faster to show center subject -->
+        <div class="position-absolute top-0 start-0 w-100 h-100"
+            style="background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0) 60%);">
+        </div>
+    </div>
+
+    <!-- The Content Layer (Z-Index 2) -->
+    <div class="container pt-5 pb-5 position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-4 border border-success border-opacity-25"
+                    style="background: rgba(220, 252, 231, 0.5); font-size: 0.8rem; font-weight: 700; color: #15803d;">
+                    <span class="position-relative d-flex h-2 w-2">
+                        <span
+                            class="animate-ping position-absolute d-inline-flex h-100 w-100 rounded-circle bg-success opacity-75"></span>
+                        <span class="position-relative d-inline-flex rounded-circle h-2 w-2 bg-success"></span>
+                    </span>
+                    <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></span>
+                    SYSTEM OPERATIONAL • 1,242 VOLUNTEERS ONLINE
+                </div>
+
+                <h1 class="hero-heading">
+                    Minutes Matter.<br>
+                    Join the <span style="color: #6B7280;">Grid.</span>
+                </h1>
+
+                <p class="hero-sub" style="color: #201f20;">
+                    The decentralized network bridging the critical gap between emergency and response using verified
+                    hyper-local volunteers.
+                </p>
+
+                <div class="d-flex gap-3">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'emergencies:emergency_map' %}" class="btn-brand-primary">Launch Grid</a>
+                    {% else %}
+                    <a href="{% url 'accounts:register' %}" class="btn-brand-primary">
+                        Join the Network
+                    </a>
+                    <a href="{% url 'emergencies:emergency_map' %}" class="btn-brand-outline">
+                        View Live Map <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+<br><br><br><br><br>
+<!-- Floating Stats Section -->
+<section class="position-relative z-index-10 px-3">
+    <div class="container stats-floating-container">
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="stat-item">
+                    <span class="stat-value">5,000+</span>
+                    <span class="stat-label">Verified Heroes</span>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="stat-item">
+                    <span class="stat-value text-danger">4m</span>
+                    <span class="stat-label">Average Response Time</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <span class="stat-value">India</span>
+                    <span class="stat-label">Nationwide Coverage</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners Logo Strip (New) -->
+<section class="py-4 bg-light border-bottom border-light">
+    <div class="container">
+        <p class="text-center text-secondary small fw-bold text-uppercase ls-1 mb-3">Effective In Partnership
+            With</p>
+        <div class="d-flex justify-content-center gap-5 opacity-50 grayscale flex-wrap">
+            <i class="bi bi-hospital fs-3"></i>
+            <i class="bi bi-bank2 fs-3"></i>
+            <i class="bi bi-building fs-3"></i>
+            <i class="bi bi-shield-shaded fs-3"></i>
+            <i class="bi bi-heart-pulse fs-3"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Features / Command & Control -->
+<section class="section-padding bg-light position-relative overflow-hidden">
+    <!-- Subtle Topo Background for Texture -->
+    <div class="bg-topo-map position-absolute w-100 h-100 top-0 start-0 opacity-50"></div>
+
+    <div class="container position-relative z-1 py-5">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-3">Command & Control at Your Fingertips.</h2>
+                <p class="text-secondary lead">Advanced technology designed to simplify chaos. Our grid ensures the
+                    right help arrives exactly when it's needed.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-4">
+                <div class="feature-card-premium">
+                    <div class="icon-box-premium">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Hyper-Local Dispatch</h3>
+                    <p class="text-secondary mb-0 big">Our algorithm identifies the nearest qualified volunteers within
+                        a 500m radius instantly.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-4">
+                <div class="feature-card-premium">
+                    <div class="icon-box-premium">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Live Vitals Sync</h3>
+                    <p class="text-secondary mb-0 big">Share critical patient data with incoming ambulances before they
+                        even arrive.</p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-4">
+                <div class="feature-card-premium">
+                    <div class="icon-box-premium">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Verified Trust Layer</h3>
+                    <p class="text-secondary mb-0 big">Every volunteer is physically verified and medically certified.
+                        Safety is our protocol.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mobile App Showcase (New) -->
+<section class="py-5 bg-light overflow-hidden">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+                <div class="phone-mockup-card">
+                    <div
+                        class="bg-black text-white p-3 rounded-3 mb-3 d-flex align-items-center justify-content-between">
+                        <small>12:41</small>
+                        <i class="bi bi-wifi"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-3 shadow-sm text-start mb-2">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                            <span class="fw-bold text-danger small">Emergency Alert</span>
+                        </div>
+                        <h5 class="fw-bold mb-1">Cardiac Arrest</h5>
+                        <small class="text-muted">400m away • 12 Main St</small>
+                        <button class="btn btn-danger w-100 btn-sm mt-3 fw-bold">Accept Mission</button>
+                    </div>
+                    <div class="bg-white p-3 rounded-3 shadow-sm text-start opacity-50">
+                        <div class="d-flex gap-2">
+                            <div class="bg-light rounded-circle" style="width:30px; height:30px;"></div>
+                            <div>
+                                <div class="bg-light rounded" style="width:100px; height:10px;"></div>
+                                <div class="bg-light rounded mt-1" style="width:60px; height:8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <h2 class="h1 fw-bold mb-4">The Power of the Grid in Your Pocket.</h2>
+                    <p class="text-secondary lead mb-5">
+                        Our dedicated responder app ensures you never miss a call. Real-time navigation, medical
+                        protocols,
+                        and instant communication with <!-- Right Column Removed to show Hero Image -->
+                </div>
+            </div>
+</section>
+
+<!-- Success Stories (New) -->
+<section class="py-5 bg-white">
+    <div class="container py-5">
+        <h2 class="h1 fw-bold mb-5 text-center">Heroes of the Grid</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="testimonial-card">
+                    <img src="https://ui-avatars.com/api/?name=Dr+S&background=random" class="user-avatar-lg"
+                        alt="Profile">
+                    <p class="text-secondary mb-4 fst-italic">"I received the alert while buying groceries. I
+                        was able
+                        to perform CPR for 6 minutes before the ambulance arrived. The doctors said those 6
+                        minutes
+                        saved his life."</p>
+                    <h6 class="fw-bold mb-0">Dr. Sarah Jenkin</h6>
+                    <small class="text-secondary">Volunteer since 2022</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="testimonial-card">
+                    <img src="https://ui-avatars.com/api/?name=Mark+D&background=random" class="user-avatar-lg"
+                        alt="Profile">
+                    <p class="text-secondary mb-4 fst-italic">"Knowing that verified help is just around the
+                        corner
+                        gives our neighborhood a peace of mind that no other service can provide. It's truly a
+                        safety
+                        net."</p>
+                    <h6 class="fw-bold mb-0">Mark Davison</h6>
+                    <small class="text-secondary">Community Organizer</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trust Pillars -->
+<section class="py-5" style="background: #F9FAFB;">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="h1 fw-bold mb-3">Why Trust The Grid?</h2>
+                <p class="text-secondary mb-0" style="max-width: 500px;">
+                    Built on principles of speed, security, and verification. We don't just connect people; we
+                    secure
+                    the connection.
+                </p>
+            </div>
+            <a href="#" class="text-danger fw-bold text-decoration-none d-none d-md-block">
+                Read our Safety Manifesto <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 border h-100 bg-white">
+                    <i class="bi bi-geo-alt-fill text-danger fs-4 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Hyper-Local</h6>
+                    <p class="text-secondary small mb-0">Response within minutes from neighbors who know the
+                        terrain.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 border h-100 bg-white">
+                    <i class="bi bi-shield-check-fill text-danger fs-4 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Verified Trust</h6>
+                    <p class="text-secondary small mb-0">Every volunteer undergoes rigorous background checks
+                        and
+                        certifications.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 border h-100 bg-white">
+                    <i class="bi bi-lock-fill text-danger fs-4 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Secure</h6>
+                    <p class="text-secondary small mb-0">Military-grade encryption for all location and medical
+                        data
+                        transmitted.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-4 rounded-3 border h-100 bg-white">
+                    <i class="bi bi-lightning-charge-fill text-danger fs-4 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Fast</h6>
+                    <p class="text-secondary small mb-0">Optimized routing algorithms cut travel time by
+                        avoiding
+                        congestion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll('.counter');
+        const speed = 40;
+
+        counters.forEach(counter => {
+            const animate = () => {
+                const value = +counter.getAttribute('data-target').replace(/,/g, '');
+                const data = +counter.innerText.replace(/,/g, '');
+                const time = value / speed;
+                if (data < value) {
+                    counter.innerText = Math.ceil(data + time).toLocaleString();
+                    setTimeout(animate, 20);
+                } else {
+                    counter.innerText = (+value).toLocaleString();
+                }
+            }
+            animate();
+        });
+    });
+</script>
+{% endblock %}
