@@ -1,3 +1,4 @@
+{% load static %}
 // Golden Minutes - Service Worker
 const CACHE_NAME = 'golden-minutes-v4';
 const OFFLINE_URL = '/offline.html';
