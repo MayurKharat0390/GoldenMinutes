@@ -66,6 +66,37 @@
                             {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 rounded-3 p-2">
+                            <!-- Fall Detection Toggle -->
+                            <li>
+                                <div class="dropdown-item px-3 py-2 d-flex align-items-center"
+                                    onclick="event.stopPropagation();">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="fallDetectionToggle"
+                                            onchange="if(this.checked){ window.GoldenMinutes.fallDetector.enable().then(res => { if(!res) this.checked=false; }); } else { window.GoldenMinutes.fallDetector.disable(); }">
+                                        <label class="form-check-label small fw-bold" for="fallDetectionToggle">Fall
+                                            Detection</label>
+                                    </div>
+                                    <span class="badge bg-danger ms-auto" id="fall-detection-badge"
+                                        style="display:none; font-size:0.6rem;">ON</span>
+                                </div>
+                            </li>
+                            <!-- Voice Trigger Toggle -->
+                            <li>
+                                <div class="dropdown-item px-3 py-2 d-flex align-items-center"
+                                    onclick="event.stopPropagation();">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="voiceTriggerToggle"
+                                            onchange="if(this.checked){ window.GoldenMinutes.voiceTrigger.enable().then(res => { if(!res) this.checked=false; }); } else { window.GoldenMinutes.voiceTrigger.disable(); }">
+                                        <label class="form-check-label small fw-bold" for="voiceTriggerToggle">Voice
+                                            Trigger</label>
+                                    </div>
+                                    <span class="badge bg-danger ms-auto" id="voice-trigger-badge"
+                                        style="display:none; font-size:0.6rem;">ON</span>
+                                </div>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             {% if user.is_staff %}
                             <li>
                                 <a class="dropdown-item rounded-2 text-primary"
@@ -335,6 +366,36 @@
 
     <!-- Push Notifications -->
     <script src="/static/js/notifications.js"></script>
+
+    <!-- Fall Detection System -->
+    <script src="/static/js/fall_detection.js"></script>
+
+    <!-- Voice Trigger System -->
+    <script src="/static/js/voice_trigger.js"></script>
+
+    <!-- Fall Detection Modal -->
+    <div class="modal fade" id="fallDetectionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg text-center p-4">
+                <div class="modal-header border-0 justify-content-center p-0 mb-3">
+                    <h5 class="modal-title fw-bold display-6" id="fall-modal-title">...</h5>
+                </div>
+                <div class="modal-body p-0 mb-4" id="fall-modal-body">
+                    ...
+                </div>
+                <div class="progress mb-4 rounded-pill" style="height: 15px; background-color: #e9ecef;">
+                    <div class="progress-bar bg-danger" id="fall-timer-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-lg btn-success rounded-pill fw-bold py-3 shadow-sm"
+                        onclick="window.GoldenMinutes.fallDetector.cancelFall()">
+                        <i class="bi bi-check-circle-fill me-2"></i>I'M OKAY (FALSE ALARM)
+                    </button>
+                    <p class="text-muted small mt-2 mb-0">Tap to cancel alarm</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% block extra_js %}{% endblock %}
 
