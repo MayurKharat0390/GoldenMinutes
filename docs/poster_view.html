@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Minutes - Conference Poster</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap');
+
+        :root {
+            /* Brand Colors */
+            --gold-primary: #f59e0b;
+            /* Golden Amber */
+            --gold-light: #fcd34d;
+            --slate-dark: #0f172a;
+            /* Slate 900 */
+            --slate-medium: #1e293b;
+            /* Slate 800 */
+            --slate-light: #334155;
+            /* Slate 700 */
+            --bg-page: #f1f5f9;
+            /* Slate 100 */
+            --bg-card: #ffffff;
+
+            /* Dimensions */
+            --poster-width: 1200px;
+            /* Scaled down for screen viewing, real A0 is 4x larger pixels usually */
+            --col-gap: 25px;
+            --section-padding: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #cbd5e1;
+            font-family: 'Open Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .poster {
+            width: var(--poster-width);
+            min-height: calc(var(--poster-width) * 1.414);
+            /* Aspect Ratio */
+            background-color: var(--bg-page);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* HEADER SECTION */
+        .poster-header {
+            background: linear-gradient(135deg, var(--slate-dark) 0%, var(--slate-medium) 100%);
+            color: white;
+            padding: 30px 40px;
+            display: grid;
+            grid-template-columns: 150px 1fr 150px;
+            /* Logo - Title - Logo */
+            align-items: center;
+            border-bottom: 8px solid var(--gold-primary);
+            position: relative;
+        }
+
+        .logo-box {
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-dark);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+
+        .header-content {
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .header-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-subtitle {
+            font-size: 1.4rem;
+            font-weight: 400;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+        .header-meta {
+            display: inline-flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 1rem;
+        }
+
+        .header-meta span strong {
+            color: var(--gold-primary);
+        }
+
+        /* MAIN CONTENT GRID */
+        .poster-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--col-gap);
+            padding: 30px;
+            flex-grow: 1;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            gap: var(--col-gap);
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: var(--section-padding);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--gold-primary);
+        }
+
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--slate-medium);
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title span {
+            color: var(--gold-primary);
+            /* Numbering or Icon color */
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: var(--slate-light);
+            line-height: 1.5;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul {
+            padding-left: 20px;
+            color: var(--slate-light);
+            margin-bottom: 12px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        strong {
+            color: var(--slate-dark);
+            font-weight: 700;
+        }
+
+        /* SPECIAL ELEMENTS */
+        .highlight-box {
+            background: #fffbeb;
+            border-left: 4px solid var(--gold-primary);
+            padding: 12px;
+            font-size: 0.9rem;
+            color: var(--slate-dark);
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tech-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--slate-medium);
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 160px;
+            background: repeating-linear-gradient(45deg,
+                    #f1f5f9,
+                    #f1f5f9 10px,
+                    #e2e8f0 10px,
+                    #e2e8f0 20px);
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            margin: 15px 0;
+        }
+
+        .methodology-step {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: var(--slate-medium);
+            color: var(--gold-primary);
+            min-width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        /* FOOTER */
+        .poster-footer {
+            background: var(--slate-medium);
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+            border-top: 4px solid var(--gold-primary);
+        }
+
+        /* UTILITIES */
+        .text-sm {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="poster">
+        <!-- Header with Logos -->
+        <header class="poster-header">
+            <div class="logo-box">
+                <img src="pccoe_logo.png" alt="PCCoE Logo" style="max-width: 100%; max-height: 100%;">
+            </div>
+            <div class="header-content">
+                <h1 class="header-title">GOLDEN MINUTES</h1>
+                <div class="header-subtitle">A Decentralized Emergency Response System with Advanced Sensory Triggers
+                </div>
+                <div class="header-meta">
+                    <span><strong>Team:</strong> Mayur Kharat, Prince Vallecha, Harshad Thok</span>
+                    <span>•</span>
+                    <span><strong>Dept:</strong> Computer Engineering</span>
+                    <span>•</span>
+                    <span><strong>Guide:</strong> Prof. Sonika Gill Mam</span>
+                </div>
+            </div>
+            <div class="logo-box">
+                <img src="ai_year_logo.png" alt="AI Year Logo" style="max-width: 100%; max-height: 100%;">
+            </div>
+        </header>
+
+        <div class="poster-body" style="display: flex; flex-direction: column; gap: 20px;">
+
+            <!-- TOP ROW (3 Columns) -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px;">
+
+                <!-- COLUMN 1 -->
+                <div class="col">
+                    <!-- 1. Abstract -->
+                    <div class="card">
+                        <h2 class="section-title"><span>01.</span> Abstract</h2>
+                        <p>
+                            "Golden Minutes" is a solution to the "Golden Hour" problem—where traffic delays prevent
+                            ambulances from reaching victims in time. We built a PWA that connects victims to nearby
+                            "Happy Samaritan" volunteers using automated accident detection.
+                        </p>
+                    </div>
+
+                    <!-- 2. Problem Statement -->
+                    <div class="card">
+                        <h2 class="section-title"><span>02.</span> Problem Statement</h2>
+                        <div class="highlight-box">
+                            <strong>The Gap:</strong> In 30% of cases, patients die before reaching the hospital.
+                        </div>
+                        <ul>
+                            <li><strong>Traffic Blockades:</strong> Ambulances cannot assume a clear path in dense
+                                cities.</li>
+                            <li><strong>Incapacitated Victims:</strong> Traditional apps require the user to "Press a
+                                Button". This fails if the user is unconscious.</li>
+                        </ul>
+                    </div>
+
+                    <!-- 4A. Methodology I -->
+                    <div class="card">
+                        <h2 class="section-title"><span>04A.</span> Fall Detection</h2>
+                        <p><strong>Core Logic:</strong> 60Hz monitoring of <code>DeviceMotion</code>.</p>
+                        <div class="methodology-step">
+                            <div class="step-num">1</div>
+                            <div><strong>Impact:</strong> Trigger if Vector Sum > 25 m/s².</div>
+                        </div>
+                        <div class="methodology-step">
+                            <div class="step-num">2</div>
+                            <div><strong>Verification:</strong> Wait for 5s stillness.</div>
+                        </div>
+                        <div class="methodology-step">
+                            <div class="step-num">3</div>
+                            <div><strong>Alert:</strong> Start 15s Countdown (User Cancel Safety).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2 -->
+                <div class="col">
+                    <!-- 3. System Architecture -->
+                    <div class="card">
+                        <h2 class="section-title"><span>03.</span> System Architecture</h2>
+                        <div
+                            style="width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 15px 0; padding: 10px;">
+                            <img src="system_architecture.png" alt="Architecture Diagram"
+                                style="width: 100%; height: auto;">
+                        </div>
+                        <div class="tech-grid">
+                            <div class="tech-item">Frontend: PWA</div>
+                            <div class="tech-item">Backend: Django</div>
+                            <div class="tech-item">DB: PostgreSQL</div>
+                            <div class="tech-item">API: Web Audio</div>
+                        </div>
+                    </div>
+
+                    <!-- 4B. Methodology II -->
+                    <div class="card" style="flex-grow: 1;">
+                        <h2 class="section-title"><span>04B.</span> Audio Trigger</h2>
+                        <p>Uses <strong>Web Audio API</strong> for spectral analysis to detect distress in noisy
+                            environments.</p>
+
+                        <div class="methodology-step">
+                            <div class="step-num">1</div>
+                            <div><strong>Scream Detection:</strong><br>RMS Amplitude > 0.4 (>85dB) for >300ms.</div>
+                        </div>
+                        <div class="methodology-step">
+                            <div class="step-num">2</div>
+                            <div><strong>Vernacular AI:</strong><br>Matches keywords: "Help", "Bachao" (Hindi).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3 -->
+                <div class="col">
+                    <!-- 5. Results -->
+                    <div class="card">
+                        <h2 class="section-title"><span>05.</span> Performance</h2>
+                        <div
+                            style="width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 15px 0; padding: 10px;">
+                            <img src="performance_graph.png" alt="Performance Graph" style="width: 100%; height: auto;">
+                        </div>
+                        <ul>
+                            <li><strong>Alert Speed:</strong> &lt; 200ms latency on 4G.</li>
+                            <li><strong>Accuracy:</strong> 85% success in drop tests.</li>
+                            <li><strong>Boot Time:</strong> 1.2s via Service Workers.</li>
+                        </ul>
+                    </div>
+
+                    <!-- 6. Future Scope -->
+                    <div class="card">
+                        <h2 class="section-title"><span>06.</span> Future Scope</h2>
+                        <ul>
+                            <li><strong>Smartwatch:</strong> HRV/Pulse monitoring.</li>
+                            <li><strong>Pre-Alert:</strong> Send blood group to ER.</li>
+                            <li><strong>Drone Dispatch:</strong> Automated AED delivery.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Demo / Info -->
+                    <div class="card" style="background: var(--slate-medium); color: white; border: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h3 style="color: var(--gold-primary); margin-bottom: 5px;">Scan Demo</h3>
+                                <p style="color: #cbd5e1; font-size: 0.8rem;">Project ID: CEP_GA_21</p>
+                            </div>
+                            <div
+                                style="background: white; width: 60px; height: 60px; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <img src="Golden Minutes.png" alt="App QR" style="width: 100%; height: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTTOM ROW (Conclusion - Full Width) -->
+            <div class="card" style="border-left: 6px solid var(--gold-primary);">
+                <h2 class="section-title" style="margin-bottom: 10px;"><span>07.</span> Conclusion & Impact</h2>
+                <div style="display: flex; gap: 20px;">
+                    <p style="flex: 1; margin: 0;">
+                        Golden Minutes proves that complex safety systems don't need expensive hardware. By leveraging
+                        the smartphone in every citizen's pocket, we create a decentralized safety net.
+                    </p>
+                    <p style="flex: 1; margin: 0;">
+                        Moving from a "Centralized" to a "Community-First" approach reduces response time from 15
+                        minutes to <strong>Golden Minutes</strong>, effectively saving lives that are lost in transit.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+
+        <footer class="poster-footer">
+            Golden Minutes © 2026 | Department of Computer Engineering | Pimpri Chinchwad College of Engineering (PCCoE)
+        </footer>
+    </div>
+
+</body>
+
+</html>
