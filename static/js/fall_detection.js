@@ -245,6 +245,15 @@ class FallDetector {
 
         modal.show();
     }
+
+    /**
+     * Simulation method for Demo/Competition.
+     * Triggers the fall sequence immediately without sensor input.
+     */
+    testTrigger() {
+        console.warn("DEMO: Manually triggering fall sequence...");
+        this.triggerFallSequence();
+    }
 }
 
 // Initialize

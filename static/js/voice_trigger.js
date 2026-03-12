@@ -39,30 +39,38 @@ class VoiceTrigger {
 
         try {
             // 1. Request Microphone
+            // Note: SpeechRecognition on Android prefers to manage its own mic stream.
+            // We request it once here to ensure permissions are settled.
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             console.log("Microphone access granted.");
             
-            // 2. Start Audio Analysis (Scream detection)
-            await this.startAudioAnalysis(stream);
-            
-            // 3. Start Speech Recognition (Phrase detection)
-            this.startSpeechRecognition();
+            // 2. Start Speech Recognition (Phrase detection)
+            // On Mobile Chrome, STT often fails if AudioContext is already using the mic.
+            // So we start STT first.
+            await this.startSpeechRecognition();
+
+            // 3. Start Audio Analysis (Scream detection) - only if STT started or on Desktop
+            // Added a small delay to let STT "settle" on mobile
+            setTimeout(async () => {
+                try {
+                    await this.startAudioAnalysis(stream);
+                } catch (err) {
+                    console.warn("Scream detection context failed to start (likely mic conflict with STT):", err);
+                }
+            }, 1000);
 
             this.isActive = true;
             this.updateStatusUI(true);
             
             // 4. Voice Feedback
-            this.speakFeedback("Voice trigger activated. Listening for commands.");
+            this.speakFeedback("Voice trigger activated.");
             
             console.log("✓ Voice Trigger Enabled Successfully");
             return true;
         } catch (err) {
             console.error("❌ Voice Trigger Enable Error:", err);
-            let msg = "Microphone permission required for Voice Trigger.";
-            if (err.name === 'NotAllowedError') msg = "Microphone access was denied. Please allow it in browser settings.";
-            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-                msg += " NOTE: Voice detection requires HTTPS in Chrome.";
-            }
+            let msg = "Microphone permission required.";
+            if (err.name === 'NotAllowedError') msg = "Microphone access denied. Please allow it in settings.";
             alert(msg);
             this.updateStatusUI(false);
             return false;
@@ -141,55 +149,56 @@ class VoiceTrigger {
     }
 
     startSpeechRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-            console.warn("Speech Recognition (STT) not supported in this browser.");
-            return;
-        }
-
-        this.recognition = new SpeechRecognition();
-        this.recognition.continuous = true;
-        this.recognition.interimResults = false;
-        this.recognition.lang = 'en-US';
-
-        this.recognition.onstart = () => {
-            console.log("Speech Recognition (STT) Service Active.");
-        };
-
-        this.recognition.onresult = (event) => {
-            if (!this.isActive || this.isAlarming) return;
-
-            const lastResultIndex = event.results.length - 1;
-            const transcript = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
-            console.log("Voice Heard:", transcript);
-
-            if (this.TRIGGER_PHRASES.some(phrase => transcript.includes(phrase))) {
-                console.log("PHRASE MATCHED:", transcript);
-                this.triggerEmergencySequence(`Voice Phrase: "${transcript}"`);
+        return new Promise((resolve, reject) => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.warn("Speech Recognition not supported.");
+                resolve();
+                return;
             }
-        };
 
-        this.recognition.onerror = (event) => {
-            console.error("Speech Recognition Error:", event.error);
-            if (event.error === 'not-allowed') {
-                this.isActive = false;
-                this.updateStatusUI(false);
-                alert("Speech recognition blocked by browser. Please enable permissions.");
+            this.recognition = new SpeechRecognition();
+            this.recognition.continuous = true;
+            this.recognition.interimResults = false;
+            this.recognition.lang = 'en-US';
+
+            this.recognition.onstart = () => {
+                console.log("STT Service Active.");
+                resolve();
+            };
+
+            this.recognition.onresult = (event) => {
+                if (!this.isActive || this.isAlarming) return;
+                const lastResultIndex = event.results.length - 1;
+                const transcript = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
+                console.log("Heard:", transcript);
+
+                if (this.TRIGGER_PHRASES.some(phrase => transcript.includes(phrase))) {
+                    this.triggerEmergencySequence(`Voice Phrase: "${transcript}"`);
+                }
+            };
+
+            this.recognition.onerror = (event) => {
+                console.error("STT Error:", event.error);
+                if (event.error === 'not-allowed' || event.error === 'service-busy') {
+                    console.warn("STT Engine busy/blocked.");
+                }
+            };
+
+            this.recognition.onend = () => {
+                if (this.isActive && !this.isAlarming) {
+                    try { this.recognition.start(); } catch (e) {}
+                }
+            };
+
+            try {
+                this.recognition.start();
+            } catch (e) {
+                console.error("STT Start Error:", e);
+                resolve(); // Don't block
             }
-        };
-
-        this.recognition.onend = () => {
-            if (this.isActive && !this.isAlarming) {
-                try { this.recognition.start(); } catch (e) {}
-            }
-        };
-
-        try {
-            this.recognition.start();
-        } catch (e) {
-            console.error("Recognition Start Failed:", e);
-        }
+        });
     }
 
     triggerEmergencySequence(source) {
