@@ -105,6 +105,21 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Technical Demo Mode (For Competition) -->
+                <div class="card bg-dark border-0 rounded-4 p-3 mt-4 text-white shadow-lg" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-uppercase fw-bold letter-spacing-1" style="font-size: 0.7rem; color: #ffc107;">Technical Demo</small>
+                        <i class="bi bi-cpu-fill text-warning"></i>
+                    </div>
+                    <button class="btn btn-warning btn-sm w-100 fw-bold rounded-pill py-2 shadow" 
+                            onclick="if(confirm('Start Technical Fall Simulation?')) { window.GoldenMinutes.fallDetector.enable().then(() => { window.GoldenMinutes.fallDetector.testTrigger(); }); }">
+                        <i class="bi bi-play-fill"></i> SIMULATE FALL
+                    </button>
+                    <p class="mb-0 mt-2" style="font-size: 0.65rem; opacity: 0.7;">
+                        <i class="bi bi-info-circle me-1"></i> Use this for live competition demo. Triggers the algorithm immediately.
+                    </p>
+                </div>
             </div>
         </div>
 
