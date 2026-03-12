@@ -22,10 +22,12 @@ class VoiceTrigger {
         this.SCREAM_THRESHOLD = 0.45; // RMS Amplitude (0.0 to 1.0).
         this.SCREAM_FRAMES_REQUIRED = 8; // ~200ms of sustained loud noise
         this.TRIGGER_PHRASES = [
-            'help me', 'help', 'bachao', 'madat kara',
-            'call ambulance', 'call doctor', 'ambulance',
-            'emergency', 'save me', 'police'
+            'help me', 'help', 'bachao', 'bachao bachao', 'madat kara',
+            'ambulance', 'emergency', 'save me', 'police', 'doctor',
+            'accident', 'aag lagi', 'aag'
         ];
+        
+        this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         // Voice Prep
         if ('speechSynthesis' in window) {
@@ -35,43 +37,28 @@ class VoiceTrigger {
 
     async enable() {
         if (this.isActive) return;
-        console.log("Attempting to enable Voice Trigger...");
+        console.log("Enabling Voice Trigger [Mobile:" + this.isMobile + "]");
 
         try {
-            // 1. Request Microphone
-            // Note: SpeechRecognition on Android prefers to manage its own mic stream.
-            // We request it once here to ensure permissions are settled.
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            console.log("Microphone access granted.");
-            
-            // 2. Start Speech Recognition (Phrase detection)
-            // On Mobile Chrome, STT often fails if AudioContext is already using the mic.
-            // So we start STT first.
-            await this.startSpeechRecognition();
-
-            // 3. Start Audio Analysis (Scream detection) - only if STT started or on Desktop
-            // Added a small delay to let STT "settle" on mobile
-            setTimeout(async () => {
-                try {
-                    await this.startAudioAnalysis(stream);
-                } catch (err) {
-                    console.warn("Scream detection context failed to start (likely mic conflict with STT):", err);
-                }
-            }, 1000);
+            if (this.isMobile) {
+                // ON MOBILE: Do NOT request getUserMedia. 
+                // STT needs exclusive mic access on Chrome Android.
+                await this.startSpeechRecognition();
+                this.speakFeedback("Voice trigger active.");
+            } else {
+                // ON DESKTOP: We can usually share or sequential access.
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                await this.startSpeechRecognition();
+                setTimeout(() => this.startAudioAnalysis(stream), 1000);
+                this.speakFeedback("Voice trigger activated.");
+            }
 
             this.isActive = true;
             this.updateStatusUI(true);
-            
-            // 4. Voice Feedback
-            this.speakFeedback("Voice trigger activated.");
-            
-            console.log("✓ Voice Trigger Enabled Successfully");
             return true;
         } catch (err) {
-            console.error("❌ Voice Trigger Enable Error:", err);
-            let msg = "Microphone permission required.";
-            if (err.name === 'NotAllowedError') msg = "Microphone access denied. Please allow it in settings.";
-            alert(msg);
+            console.error("Voice Trigger Error:", err);
+            alert("Microphone access required for voice trigger.");
             this.updateStatusUI(false);
             return false;
         }
@@ -160,8 +147,8 @@ class VoiceTrigger {
 
             this.recognition = new SpeechRecognition();
             this.recognition.continuous = true;
-            this.recognition.interimResults = false;
-            this.recognition.lang = 'en-US';
+            this.recognition.interimResults = true; // Use interim for faster response
+            this.recognition.lang = 'en-IN'; // Better for Indian accents (Hindi/English mix)
 
             this.recognition.onstart = () => {
                 console.log("STT Service Active.");
