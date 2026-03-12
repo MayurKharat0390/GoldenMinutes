@@ -436,6 +436,13 @@
                 utterance.lang = 'en-US';  // English (US)
             }
 
+            // Find best voice for the language
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                const preferredVoice = voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
+                if (preferredVoice) utterance.voice = preferredVoice;
+            }
+
             utterance.rate = 0.9;
             utterance.pitch = 1;
             utterance.volume = 1;
@@ -444,6 +451,12 @@
             btn.innerHTML = '<i class="bi bi-pause-fill me-2"></i>Speaking...';
 
             utterance.onend = () => {
+                btn.classList.remove('speaking');
+                btn.innerHTML = '<i class="bi bi-volume-up-fill me-2"></i>Listen';
+            };
+
+            utterance.onerror = (event) => {
+                console.error("SpeechSynthesis Error:", event);
                 btn.classList.remove('speaking');
                 btn.innerHTML = '<i class="bi bi-volume-up-fill me-2"></i>Listen';
             };
